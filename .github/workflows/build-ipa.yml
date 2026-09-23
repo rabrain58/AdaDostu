@@ -41,8 +41,8 @@ jobs:
           test -f "$APP/PlugIns/AdaDostuIsland.appex/AdaDostuIsland"
           test -f "$APP/AdaCat.ttf"
           test -f "$APP/PlugIns/AdaDostuIsland.appex/AdaCat.ttf"
-          lipo -verify_arch arm64 "$APP/AdaDostu"
-          lipo -verify_arch arm64 "$APP/PlugIns/AdaDostuIsland.appex/AdaDostuIsland"
+          lipo "$APP/AdaDostu" -verify_arch arm64
+          lipo "$APP/PlugIns/AdaDostuIsland.appex/AdaDostuIsland" -verify_arch arm64
           /usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' "$APP/Info.plist" | grep -q true
           python3 scripts/verify_bundle.py "$APP"
       - name: Package IPA for Sideloadly
