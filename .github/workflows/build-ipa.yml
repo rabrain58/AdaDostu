@@ -1,0 +1,73 @@
+name: Build iPhone IPA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ipa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show build environment
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+      - name: Install project generator
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate --spec project.yml
+      - name: Build unsigned iPhone app
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .output
+          xcodebuild -project AdaDostu.xcodeproj -scheme AdaDostu \
+            -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath .derived \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee .output/build.log
+      - name: Verify app and extension
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP=".derived/Build/Products/Release-iphoneos/AdaDostu.app"
+          test -f "$APP/AdaDostu"
+          test -f "$APP/PlugIns/AdaDostuIsland.appex/AdaDostuIsland"
+          test -f "$APP/AdaCat.ttf"
+          test -f "$APP/PlugIns/AdaDostuIsland.appex/AdaCat.ttf"
+          lipo -verify_arch arm64 "$APP/AdaDostu"
+          lipo -verify_arch arm64 "$APP/PlugIns/AdaDostuIsland.appex/AdaDostuIsland"
+          /usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' "$APP/Info.plist" | grep -q true
+          python3 scripts/verify_bundle.py "$APP"
+      - name: Package IPA for Sideloadly
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .output/Payload
+          cp -R .derived/Build/Products/Release-iphoneos/AdaDostu.app .output/Payload/
+          cd .output
+          /usr/bin/zip -qry AdaDostu-unsigned.ipa Payload
+          shasum -a 256 AdaDostu-unsigned.ipa > SHA256.txt
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: AdaDostu-IPA
+          path: |
+            .output/AdaDostu-unsigned.ipa
+            .output/SHA256.txt
+          retention-days: 14
+          if-no-files-found: error
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: .output/build.log
+          if-no-files-found: ignore
+          retention-days: 7

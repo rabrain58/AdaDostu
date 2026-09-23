@@ -1,0 +1,9 @@
+.build-tools/
+.derived/
+.output/
+__pycache__/
+*.xcodeproj/
+*.ipa
+*.zip
+.DS_Store
+design/font-render-check.png
