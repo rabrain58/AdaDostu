@@ -11,7 +11,9 @@ SwiftUI uygulaması + ActivityKit/WidgetKit uzantısı. Abonelik, sunucu ve anal
 - Deneysel saniyelik hareket; sabit görünüm seçeneği.
 - Hareketi Azalt veya Always-On kararması algılanırsa sabit kedi.
 
-**Durum:** Kaynaklar ve IPA derleme akışı hazır. Windows üzerinde iOS derlemesi çalıştırılmadı.
+**Durum:** GitHub Actions üzerinde iPhone ARM64 derlemesi ve uygulama/uzantı paket kontrolleri geçti.
+İmzasız IPA üretildi: [başarılı derleme ve indirme](https://github.com/rabrain58/AdaDostu/actions/runs/35935603814).
+Derleme ortamı Xcode 16.4 / iOS 18.5 SDK; minimum hedef iOS 17.
 Sideloadly kurulumu ve iPhone 14 Pro Max / kullanıcının bildirdiği iOS 27 üzerinde görünüm ile hareket **DOĞRULANMADI**.
 Kaynak ZIP'i kurulabilir IPA değildir.
 
