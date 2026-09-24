@@ -71,3 +71,45 @@ jobs:
           path: .output/build.log
           if-no-files-found: ignore
           retention-days: 7
+
+  simulator:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: xcodegen generate --spec project.yml
+      - name: Select Dynamic Island simulator
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, subprocess, os
+          devices = json.loads(subprocess.check_output(["xcrun", "simctl", "list", "devices", "available", "-j"]))["devices"]
+          choices = [d for runtime, group in devices.items() if "iOS" in runtime for d in group if "iPhone" in d["name"] and "Pro" in d["name"]]
+          if not choices:
+              raise SystemExit("No Dynamic Island simulator available")
+          device = next((d for d in choices if "16 Pro" in d["name"]), choices[0])
+          print(device["name"], device["udid"])
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+              f.write("SIMULATOR_ID=" + device["udid"] + "\n")
+          PY
+      - name: Test actual Home Screen island
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .output
+          xcodebuild -project AdaDostu.xcodeproj -scheme AdaDostu \
+            -configuration Debug -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -derivedDataPath .derived-sim -resultBundlePath .output/IslandSmoke.xcresult \
+            -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO \
+            test 2>&1 | tee .output/simulator.log
+      - name: Upload simulator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-evidence
+          path: |
+            .output/IslandSmoke.xcresult
+            .output/simulator.log
+          retention-days: 7
+          if-no-files-found: warn

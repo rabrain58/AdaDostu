@@ -7,3 +7,5 @@ __pycache__/
 *.zip
 .DS_Store
 design/font-render-check.png
+
+.derived-sim/

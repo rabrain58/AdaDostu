@@ -5,7 +5,7 @@ struct ContentView: View {
     @StateObject private var controller = PetController()
     @Environment(\.scenePhase) private var scenePhase
     @State private var color: PetColor = .amber
-    @State private var animated = true
+    @State private var animated = false
     @State private var previewStart = Date()
     private let ink = Color(red: 0.055, green: 0.07, blue: 0.08)
 
@@ -25,7 +25,7 @@ struct ContentView: View {
                         .tracking(2)
                         .foregroundStyle(color.color)
                     Spacer()
-                    Text("İLK SÜRÜM")
+                    Text("0.1.1")
                         .font(.system(size: 10, weight: .medium, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
@@ -132,7 +132,18 @@ struct ContentView: View {
             .padding(.bottom, 32)
         }
         .background(ink.ignoresSafeArea())
-        .task { sync() }
+        .task {
+            sync()
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--smoke-static") ||
+                ProcessInfo.processInfo.arguments.contains("--smoke-animated") {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                await controller.stop()
+                animated = ProcessInfo.processInfo.arguments.contains("--smoke-animated")
+                await controller.start(color: .amber, animated: animated)
+            }
+            #endif
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { sync() }
         }

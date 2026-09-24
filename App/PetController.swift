@@ -37,6 +37,13 @@ final class PetController: ObservableObject {
         guard !busy else { return }
         refresh()
         guard current == nil else { return }
+        let plugins = Bundle.main.builtInPlugInsURL.flatMap {
+            try? FileManager.default.contentsOfDirectory(at: $0, includingPropertiesForKeys: nil)
+        } ?? []
+        guard plugins.contains(where: { $0.pathExtension == "appex" }) else {
+            errorMessage = "Dinamik Ada bileşeni kurulumda eksik. Sideloadly'de uzantıları kaldırma seçeneğini kapatıp yeniden yükle."
+            return
+        }
         guard available else {
             errorMessage = "Canlı Etkinlikler kapalı. Ayarlar > Uygulamalar > AdaDostu bölümünden izin verip yeniden dene."
             return

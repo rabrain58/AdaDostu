@@ -7,8 +7,8 @@ settings:
   base:
     SWIFT_VERSION: "5.0"
     TARGETED_DEVICE_FAMILY: "1"
-    MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "0.1.1"
+    CURRENT_PROJECT_VERSION: "2"
     CODE_SIGNING_ALLOWED: NO
     CODE_SIGNING_REQUIRED: NO
 targets:
@@ -60,6 +60,17 @@ targets:
         UIAppFonts: [AdaCat.ttf]
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+  AdaDostuUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [Tests]
+    dependencies:
+      - target: AdaDostu
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.adadostu.personal.uitests
+        TEST_TARGET_NAME: AdaDostu
 schemes:
   AdaDostu:
     build:
@@ -69,3 +80,6 @@ schemes:
       config: Debug
     archive:
       config: Release
+    test:
+      config: Debug
+      targets: [AdaDostuUITests]

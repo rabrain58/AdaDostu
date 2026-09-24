@@ -15,10 +15,8 @@ enum CatFont {
 struct StillCat: View {
     var size: CGFloat
     var body: some View {
-        Image("cat-0", bundle: .main)
-            .resizable()
-            .renderingMode(.template)
-            .interpolation(.none)
+        PixelCat()
+            .fill(style: FillStyle(antialiased: false))
             .frame(width: size, height: size)
             .accessibilityLabel("Piksel kedi")
     }
